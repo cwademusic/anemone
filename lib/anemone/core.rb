@@ -55,7 +55,11 @@ module Anemone
       # proxy server port number
       :proxy_port => false,
       # HTTP read timeout in seconds
-      :read_timeout => nil
+      :read_timeout => nil,
+      # remember external links?
+      :remember_external_links => false,
+      # follow external links?
+      :follow_external_links => false
     }
 
     # Create setter methods for all options to be called from the crawl block
@@ -201,6 +205,9 @@ module Anemone
       @pages = PageStore.new(storage)
       @robots = Robotex.new(@opts[:user_agent]) if @opts[:obey_robots_txt]
 
+      Common.remember_external_links = @opts[:remember_external_links] || false
+      Common.follow_external_links = @opts[:follow_external_links] || false
+
       freeze_options
     end
 
@@ -296,6 +303,21 @@ module Anemone
     #
     def skip_link?(link)
       @skip_link_patterns.any? { |pattern| link.path =~ pattern }
+    end
+    
+    #
+    # Returns +true+ if *uri* is in the same domain as the page, returns
+    # +false+ otherwise
+    #
+    def in_domain?(link)
+      link = link.is_a?(URI) ? link : URI(link)
+      # check against original @urls
+      @urls.each do |url|
+        if link.host == url.host then
+          return true
+        end
+      end
+      return false
     end
 
   end

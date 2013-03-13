@@ -63,7 +63,8 @@ module Anemone
         u = a['href']
         next if u.nil? or u.empty?
         abs = to_absolute(u) rescue next
-        @links << abs if in_domain?(abs)
+        # remember the link if it's in_domain or if it's external and we're remembering those
+        @links << abs if( in_domain?(abs) or Common.remember_external_links? )
       end
       @links.uniq!
       @links
